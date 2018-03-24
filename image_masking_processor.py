@@ -14,7 +14,7 @@ class MaskingProcessor:
 
         self.vgg16 = vgg16("vgg16_weights.npz")
 
-    def process(self, image_path, class_id, mask_type):
+    def process(self, image_path, classes_ids, mask_type):
 
         timestamp_start = time.strftime("%Y-%m-%d %H:%M")
 
@@ -43,7 +43,7 @@ class MaskingProcessor:
         heatmap = np.zeros((224, 224), np.float32)
 
         probas = vgg16.classify(img)
-        original_class_proba = probas[class_id]
+        original_class_proba = sum([probas[k] for k in classes_ids])
 
         x0 = 0
         while x0 + MASK_SIZE <= 224:
@@ -59,7 +59,7 @@ class MaskingProcessor:
 
                 probas = vgg16.classify(img_masked)
 
-                class_proba = probas[class_id]
+                class_proba = sum([probas[k] for k in classes_ids])
 
                 diff = original_class_proba - class_proba
 
@@ -74,6 +74,6 @@ class MaskingProcessor:
         timestamp_end = time.strftime("%Y-%m-%d %H:%M")
         mask_parameters = {"size": MASK_SIZE, "stride": MASK_STRIDE, "type": mask_type}
         results = {"img": img, "heatmap": heatmap, "timestamp_start": timestamp_start,
-                   "timestamp_end": timestamp_end, "mask": mask_parameters, "class_id": class_id, "img_path": image_path}
+                   "timestamp_end": timestamp_end, "mask": mask_parameters, "classes_ids": classes_ids, "img_path": image_path}
 
         return results
