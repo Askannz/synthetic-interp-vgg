@@ -10,6 +10,7 @@ import json
 config = json.load(open('config.json', 'r'))
 
 BASENAME = config['basename']
+LABEL = config['label']
 VARIANTS = config['variants']
 DIST = config["dist"]
 OFFSET_X, OFFSET_Y, OFFSET_Z = config["offset"]
@@ -55,7 +56,7 @@ for current_dir in VARIANTS:
             render = bpy.data.scenes['Scene'].render
             render.resolution_x = RENDER_W
             render.resolution_y = RENDER_H
-            render.filepath = root_dir + '/renders/' + 'ablation' + '/' + current_dir + '/'  + output_name
+            render.filepath = root_dir + '/renders/' + LABEL + '/' + current_dir + '/'  + output_name
             bpy.ops.render.render(write_still=True)
 
     os.chdir(root_dir)
