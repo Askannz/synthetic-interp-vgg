@@ -273,10 +273,13 @@ class vgg16:
 
         return probas[0]
 
-    def classify_with_dump(self, img):
+    def classify_with_dump(self, img, layers_to_dump):
 
         img_resized = cv2.resize(img, (224, 224))
 
-        probas, pool5 = self.sess.run([self.probs, self.pool5], feed_dict={self.img_input: [img_resized]})
+        results = self.sess.run([self.probs] + layers_to_dump, feed_dict={self.img_input: [img_resized]})
 
-        return probas[0], pool5[0]
+        probas = results[0]
+        dumps = results[1:]
+
+        return probas[0], [dump[0] for dump in dumps]
