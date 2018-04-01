@@ -234,7 +234,7 @@ class vgg16:
                                trainable=True, name='biases')
             pool5_flat = tf.reshape(self.pool5, [-1, shape])
             fc1l = tf.nn.bias_add(tf.matmul(pool5_flat, fc1w), fc1b)
-            self.fc1 = tf.nn.relu(fc1l)
+            self.fc1 = tf.nn.relu(fc1l, name=scope)
             self.parameters += [fc1w, fc1b]
 
         # fc2
@@ -245,7 +245,7 @@ class vgg16:
             fc2b = tf.Variable(tf.constant(1.0, shape=[4096], dtype=tf.float32),
                                trainable=True, name='biases')
             fc2l = tf.nn.bias_add(tf.matmul(self.fc1, fc2w), fc2b)
-            self.fc2 = tf.nn.relu(fc2l)
+            self.fc2 = tf.nn.relu(fc2l, name=scope)
             self.parameters += [fc2w, fc2b]
 
         # fc3
@@ -273,13 +273,22 @@ class vgg16:
 
         return probas[0]
 
-    def classify_with_dump(self, img, layers_to_dump):
+    def classify_with_dump(self, img, layers_to_dump_str):
+
+        graph = tf.get_default_graph()
+
+        layers_to_dump = []
+        for layer_str in layers_to_dump_str:
+            layer = graph.get_tensor_by_name("%s:0" % layer_str)
+            layers_to_dump.append(layer)
 
         img_resized = cv2.resize(img, (224, 224))
 
         results = self.sess.run([self.probs] + layers_to_dump, feed_dict={self.img_input: [img_resized]})
 
-        probas = results[0]
-        dumps = results[1:]
+        probas = results[0][0]
+        dumps = [dump[0] for dump in results[1:]]
 
-        return probas[0], [dump[0] for dump in dumps]
+        dumps_dict = dict(zip(layers_to_dump_str, dumps))
+
+        return probas, dumps_dict
