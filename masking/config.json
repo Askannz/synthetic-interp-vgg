@@ -1,0 +1,8 @@
+{
+	"base_path": "/home/robin/Documents/NUS/Lectures/sem_3/Advanced_AI/Project/Data/Images/",
+	"objects_paths": ["Electronics/camera", "Electronics/clock", "Music/guitar", "Music/piano", "Sports/football_helmet", "Sports/pool_table", "Vehicles/sports_car", "Vehicles/warplane"],
+	"classes_ids": [[759], [409,892], [402], [579], [560], [736], [817], [895]],
+	"sizes": [32, 64],
+	"stride": 8,
+	"colors": [[0, 0, 0], [128, 128, 128], [255, 255, 255]]
+}

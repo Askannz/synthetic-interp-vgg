@@ -1,32 +1,34 @@
 import cv2
-import time
 import numpy as np
 from vgg16 import vgg16
-
-MASK_SIZE = 32
-MASK_STRIDE = 4
-MASK_COLOR = [128, 128, 128]
+from monitor import Sender
 
 
 class MaskingProcessor:
 
-    def __init__(self):
+    def __init__(self, monitor=False):
 
-        self.vgg16 = vgg16("vgg16_weights.npz")
+        if monitor:
+            self.monitor = True
+            self.sender = Sender()
+        else:
+            self.monitor = False
 
-    def process(self, image_path, classes_ids, mask_type):
+        self.vgg16 = vgg16("../vgg16_weights.npz")
 
-        timestamp_start = time.strftime("%Y-%m-%d %H:%M")
+    def process(self, img, classes_ids, parameters):
 
-        img = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (224, 224))
+        MASK_SIZE = parameters["size"]
+        MASK_STRIDE = parameters["stride"]
+        MASK_COLOR = parameters["color"]
+        MASK_SHAPE = parameters["shape"]
 
-        if mask_type == "square":
+        if MASK_SHAPE == "square":
             alpha = np.ones((MASK_SIZE, MASK_SIZE), np.float32)
-        elif mask_type == "disc":
+        elif MASK_SHAPE == "disc":
             alpha = (cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (MASK_SIZE, MASK_SIZE)) > 0).astype(np.float32)
-        elif mask_type == "disc_grad":
+        elif MASK_SHAPE == "disc_grad":
             half = int(MASK_SIZE / 2)
             X = np.arange(MASK_SIZE)
             Y = np.arange(MASK_SIZE)
@@ -42,7 +44,7 @@ class MaskingProcessor:
 
         heatmap = np.zeros((224, 224), np.float32)
 
-        probas = vgg16.classify(img)
+        probas = self.vgg16.classify(img)
         original_class_proba = sum([probas[k] for k in classes_ids])
 
         x0 = 0
@@ -50,14 +52,15 @@ class MaskingProcessor:
             y0 = 0
             while y0 + MASK_SIZE <= 224:
 
-                print(x0, y0)
-
                 img_masked = img.copy()
                 img_part = img_masked[y0:y0 + MASK_SIZE, x0:x0 + MASK_SIZE]
                 img_masked[y0:y0 + MASK_SIZE, x0:x0 + MASK_SIZE] = (color_flat.astype(
                     np.float32) * alpha + img_part.astype(np.float32) * (1 - alpha)).astype(np.uint8)
 
-                probas = vgg16.classify(img_masked)
+                if self.monitor:
+                    self.sender.send(img_masked)
+
+                probas = self.vgg16.classify(img_masked)
 
                 class_proba = sum([probas[k] for k in classes_ids])
 
@@ -71,9 +74,4 @@ class MaskingProcessor:
                 y0 += MASK_STRIDE
             x0 += MASK_STRIDE
 
-        timestamp_end = time.strftime("%Y-%m-%d %H:%M")
-        mask_parameters = {"size": MASK_SIZE, "stride": MASK_STRIDE, "type": mask_type}
-        results = {"img": img, "heatmap": heatmap, "timestamp_start": timestamp_start,
-                   "timestamp_end": timestamp_end, "mask": mask_parameters, "classes_ids": classes_ids, "img_path": image_path}
-
-        return results
+        return heatmap
