@@ -1,7 +1,7 @@
 {
-	"basename": "warplane",
-	"renders_path": "/home/robin/Documents/NUS/Lectures/sem_3/Advanced_AI/Project/Data/Models/Vehicles/sports_car/renders/",
+	"basename": "clock",
+	"renders_path": "/home/robin/Documents/NUS/Lectures/sem_3/Advanced_AI/Project/Data/Models/Testing/clock/renders/",
 	"subfolder": "ablation",
-	"variants": ["original", "no_wheels", "no_front", "no_windshield"],
-	"layers": ["conv1_2", "conv2_2", "conv3_3", "conv4_3", "conv5_3", "fc1", "fc2"]
+	"variants": ["original", "no_hands"],
+	"layers": ["conv1_2", "conv2_2"]
 }

@@ -2,9 +2,10 @@ import sys
 import json
 import time
 import cv2
+import numpy as np
 from os.path import join
 from os import listdir
-import pickle
+import h5py
 from vgg16 import vgg16
 
 CONFIG_PATH = sys.argv[1]
@@ -25,8 +26,12 @@ for i, variant in enumerate(VARIANTS):
     files_list = listdir(variant_path)
 
     timestamp = time.strftime("%Y-%m-%d %H:%M")
-    variant_results = {"time_start": timestamp, "variant": variant,
-    "basename": BASENAME, "layers": LAYERS, "renders_path": RENDERS_PATH, "subfolder": SUBFOLDER, "results":{}}
+    variant_header = {"time_start": timestamp, "variant": variant,
+    "basename": BASENAME, "layers": LAYERS, "renders_path": RENDERS_PATH, "subfolder": SUBFOLDER, "files": files_list}
+
+    layers_data = {}
+    for layer in LAYERS:
+        layers_data[layer] = []
 
     for j, filename in enumerate(files_list):
 
@@ -35,10 +40,17 @@ for i, variant in enumerate(VARIANTS):
 
         filepath = join(variant_path, filename)
         img = cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2RGB)
-        probas, layers_dump = vgg16.classify_with_dump(img, LAYERS)
+        _, layers_dump = vgg16.classify_with_dump(img, LAYERS)
 
-        variant_results["results"][filename] = (probas, layers_dump)
+        for k, layer in enumerate(LAYERS):
+            layers_data[layer].append(layers_dump[layer])
 
     timestamp = time.strftime("%Y-%m-%d %H:%M")
-    variant_results["time_end"] = timestamp
-    pickle.dump(variant_results, open(join(RESULTS_PATH, variant), "wb"))
+    variant_header["time_end"] = timestamp
+
+    json.dump(variant_header, open(join(RESULTS_PATH, variant) + ".json", "w"))
+    h5f = h5py.File(join(RESULTS_PATH, variant) + ".h5", 'w')
+    for layer in LAYERS:
+        layers_data[layer] = np.array(layers_data[layer])
+        h5f.create_dataset(layer, data=layers_data[layer])
+    h5f.close()
