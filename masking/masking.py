@@ -18,8 +18,9 @@ SIZES = config["sizes"]
 STRIDE = int(config["stride"])
 COLORS = config["colors"]
 SHAPES = "square", "disc", "disc_grad"
+MONITOR = bool(config["monitor"])
 
-processor = MaskingProcessor(monitor=True)
+processor = MaskingProcessor(monitor=MONITOR)
 
 for i, object_path in enumerate(OBJECTS_PATHS):
 
