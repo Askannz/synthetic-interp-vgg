@@ -13,7 +13,7 @@ RESULTS_PATH = sys.argv[2]
 config = json.load(open(CONFIG_PATH, "r"))
 BASENAME = config["basename"]
 RENDERS_PATH = config["renders_path"]
-SUBFOLDER = "ablation"
+SUBFOLDER = config["subfolder"]
 VARIANTS = config["variants"]
 LAYERS = config["layers"]
 
