@@ -11,7 +11,7 @@ MODELS_DIR = sys.argv[1]
 RESULTS_PATH = sys.argv[2]
 TOP_SIZE = 5
 
-vgg16 = vgg16("vgg16_weights.npz")
+vgg16 = vgg16("./vgg16_weights.npz")
 
 objects_list = json.load(open(join(MODELS_DIR, "list.json"), "r"))
 
