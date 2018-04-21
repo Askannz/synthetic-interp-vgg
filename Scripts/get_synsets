@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+import sys
+import re
+
+SYNSETS_MAP_PATH = "/home/robin/Documents/NUS/Lectures/sem_3/Advanced_AI/Project/Data/Images/synsets.txt"
+NAMES = sys.argv[1:]
+
+f = open(SYNSETS_MAP_PATH, "r")
+text = f.read()
+f.close()
+
+f = open("synsets.txt", "w")
+
+synsets = []
+
+for name in NAMES:
+
+    p = re.compile("n[0-9]+ %s" % name)
+    line_match = p.search(text).group()
+    synset = line_match.split(" ")[0]
+    f.write(synset + '\n')
+
+f.close()

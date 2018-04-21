@@ -1,0 +1,13 @@
+#!/bin/bash
+
+files=`ls | grep -e "urls_[0-9].txt"`
+for f in $files
+do
+	echo $f
+	cat $f | \
+	while read url
+	do
+    		echo $url
+    		wget --tries=2 -T 10 $url
+	done
+done

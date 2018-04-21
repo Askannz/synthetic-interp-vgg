@@ -1,0 +1,83 @@
+#!/usr/bin/python
+
+import os
+from shutil import copyfile
+import numpy as np
+import cv2
+
+WNAME = "IMAGE"
+
+
+def mouse_callback(event, x, y, flags, param):
+
+    if event == cv2.EVENT_MOUSEMOVE:
+        if x < int(param["w"]/2):
+            param["class_id"] = 1
+        else:
+            param["class_id"] = 2
+    elif event == cv2.EVENT_LBUTTONDOWN:
+        param["resume"] = True
+
+
+def update_disp(img, param):
+
+    h, w, _ = img.shape
+    color_flat = np.zeros((h, w, 3), np.uint8)
+    disp = img.copy()
+
+    if param["class_id"] == 1:
+        color = [255, 0, 0]
+        color_flat[:] = color
+        disp[:, :int(w/2)] = img[:, :int(w/2)] * 0.8 + color_flat[:, :int(w/2)] * 0.2
+        cv2.putText(disp, param["class_1"], (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, [255, 255, 255])
+    else:
+        color = [0, 0, 255]
+        color_flat[:] = color
+        disp[:, int(w/2):] = img[:, int(w/2):] * 0.8 + color_flat[:, int(w/2):] * 0.2
+        cv2.putText(disp, param["class_2"], (int(w/2), 20), cv2.FONT_HERSHEY_SIMPLEX, 1, [255, 255, 255])
+
+    return disp
+
+
+param = {"resume": False, "class_id": 1, "w": 0}
+
+param["class_1"] = input("Class 1 : ")
+param["class_2"] = input("Class 2 : ")
+
+os.mkdir(param["class_1"])
+os.mkdir(param["class_2"])
+
+files = os.listdir('.')
+
+
+cv2.namedWindow(WNAME)
+cv2.setMouseCallback(WNAME, mouse_callback, param)
+
+for i, f in enumerate(files):
+
+    print(str(i + 1) + '/' + str(len(files)))
+
+    img = cv2.imread(f)
+    if img is None:
+        continue
+
+    param["w"] = img.shape[1]
+
+    while not param["resume"]:
+        disp = update_disp(img, param)
+        cv2.imshow(WNAME, disp)
+        key = cv2.waitKey(1)
+        if key == ord('\x1b'):
+            param["class_id"] = 0
+            param["resume"] = True
+
+    param["resume"] = False
+
+    if param["class_id"] == 0:
+        print("Skip")
+    elif param["class_id"] == 1:
+        print(param["class_1"])
+        copyfile(f, os.path.join(param["class_1"], f))
+    else:
+        print(param["class_2"])
+        copyfile(f, os.path.join(param["class_2"], f))

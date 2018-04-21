@@ -1,0 +1,8 @@
+#!/bin/bash
+
+i=1
+for synset in `cat synsets.txt`
+do
+    wget "http://image-net.org/api/text/imagenet.synset.geturls?wnid=$synset" -O urls_$i.txt --retry-on-http-error=503 --waitretry=900 --tries=inf
+    i=$((i+1))
+done

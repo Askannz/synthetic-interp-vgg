@@ -1,0 +1,3 @@
+#!/bin/bash
+
+blender -b -P ~/Documents/NUS/Lectures/sem_3/Advanced_AI/Project/Code/synthetic-interp-vgg/photoshoot.py
