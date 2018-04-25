@@ -268,6 +268,7 @@ class vgg16:
     def classify(self, img):
 
         img_resized = cv2.resize(img, (224, 224))
+        cv2.imwrite("resized.png", cv2.cvtColor(img_resized, cv2.COLOR_RGB2BGR))
 
         probas = self.sess.run(self.probs, feed_dict={self.img_input: [img_resized]})
 
